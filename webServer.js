@@ -182,25 +182,29 @@ app.get('/photosOfUser/:id', function (request, response) {
     // var photos = cs142models.photoOfUserModel(id);
     Photo.find ({'user_id': id}, function(err, photos){
         var photoArray = JSON.parse(JSON.stringify(photos));
-        console.log ("here hi");
-        console.log (photoArray);
+
         if (photos.length === 0) {
             console.log('Photos for user with _id:' + id + ' not found.');
             response.status(400).send('Not found');
             return;
         }
         else {
-            async.each(photoArray, function(file, callback){
-                //photo
-                //photo.comments
-                    //commentsArray
-                    //commentArray.user
-            } 
-        )}
-        var photoDetails = JSON.stringify(photos);
-
-
-        response.status(200).send(photoDetails);
+            var photoDetails = photos.forEach(function(photo, photoIndex){
+                var clonePhoto = photo;
+                if (clonePhoto.comments.length > 0){
+                    clonePhoto.comments.forEach(function(comment, commentIndex){
+                        console.log("user query complete");
+                        User.findOne({ '_id': comment.user_id}, '_id first_name last_name', function(err, user){
+                            photoArray[photoIndex].comments[commentIndex].user = user;
+                        });
+                    })
+                }
+                return clonePhoto;
+            })
+            console.log(photoArray);
+            response.status(200).send(photoArray);
+        }
+        
     });
 });
 
