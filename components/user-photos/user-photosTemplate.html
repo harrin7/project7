@@ -12,5 +12,12 @@
 		    <a md-button class="md-primary" href="#users/{{commentDetails.user._id}}">{{commentDetails.user.first_name}} {{commentDetails.user.last_name}}:</a>
 		    {{commentDetails.comment}} 
 	    </p>
+        <div class="user-comment">
+            <form ng-controller="UserPhotosController" ng-submit="userComment(photo)">
+                <label> Comment</label> 
+                <input type="text" id="name" name="name" ng-model="main.userComment" placeholder="Comment"> 
+                <button class="btn btn-primary">Add</button>
+            </form>
+        </div>
     </md-card-content>
 </md-card>

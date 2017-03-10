@@ -10,6 +10,7 @@ cs142App.config(function($mdThemingProvider) {
 
 cs142App.config(['$routeProvider',
     function ($routeProvider) {
+
         $routeProvider.
             when('/users', {
                 templateUrl: 'components/user-list/user-listTemplate.html',
@@ -23,20 +24,63 @@ cs142App.config(['$routeProvider',
                 templateUrl: 'components/user-photos/user-photosTemplate.html',
                 controller: 'UserPhotosController'
             }).
+            when('/login-register', {
+                templateUrl: 'components/login-register/login-registerTemplate.html',
+                controller: 'LoginRegisterController'
+            }).
             otherwise({
                 redirectTo: '/users'
             });
     }]);
 
-cs142App.controller('MainController', ['$scope',
-    function ($scope) {
+cs142App.controller('MainController', ['$scope', '$resource', '$rootScope', '$location', '$http',
+    function ($scope, $resource, $rootScope, $location, $http) {
         $scope.main = {};
         $scope.main.title = 'Users';
         $scope.main.sectionHeader = '';
         $scope.main.versionModel = '';
         $scope.main.firstName = '';
-        $scope.main.lastName = '';  
+        $scope.main.lastName = '';
+        $scope.main.isLoggedIn = '';
+        $scope.main.userComment ='';
+        $scope.main.userId = '';
+        $scope.main.photoDetails = '';
 
+        $scope.main.currentUserName = '';
+
+        // $rootScope.$on("isLoggedIn", function () {
+        //   $scope.main.isLoggedIn = 1;
+        // });
+
+        // $rootScope.$on( "$routeChangeStart", function(event, next, current) {
+        //          if (!main.isLoggedIn) {
+        //             // no logged user, redirect to /login-register unless already there
+        //            if (next.templateUrl !== "components/login-register/login-registerTemplate.html") {
+        //                $location.path("/login-register");
+        //            }
+        //          }
+        //       }); 
+
+        $scope.main.logoutUser = function() {
+
+          console.log('click');
+          var logoutRes = $resource('/admin/logout');
+
+
+          logoutRes.save({}, function () {
+            //do something
+            console.log('Im back');
+            $scope.main.isLoggedIn = false;
+            $rootScope.$broadcast("isLoggedOut");
+            $location.path("/login-register");
+          }, function errHandling(err) {
+            console.log('I have an error');
+          });
+        }
+      
+
+        var versionList = $resource('/test/:p1', {p1: '@id'} );
+        $scope.main.versionModel = versionList.get({'p1': 'info'}); 
 
         var versionCallback = function (model) {
                 //do some stuff
@@ -49,42 +93,15 @@ cs142App.controller('MainController', ['$scope',
                 })
         };
 
-
-
-    /*
-      * FetchModel - Fetch a model from the web server.
-      *   url - string - The URL to issue the GET request.
-      *   doneCallback - function - called with argument (model) when the
-      *                  the GET request is done. The argument model is the
-      *                  objectcontaining the model. model is undefined in 
-      *                  the error case.
-      */
-    $scope.FetchModel = function(url, doneCallback) {
-        
-        var xhrHandler = function(){
-              //Don’t do anything if not final state
-              if (this.readyState!== 4){ 
-                  return; 
-              }
-                  //Final State but status not OK
-              if (this.status !== 200) {
-                  return;
-              }
-              //store responseText (model?) in variable text 
-              var text = this.responseText;
-              
-              //call doneCallback to do something with this text. 
-              doneCallback(text);
-            //Final State & status OK
-            //do something with response.text
-        }
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = xhrHandler;
-        xhr.open("GET", url);
-        xhr.send();
-    };
-
-    $scope.FetchModel('http://localhost:3000/test/info', versionCallback);
+        console.log($rootScope);
+        $rootScope.$on( "$routeChangeStart", function(event, next, current) {
+                  if (!$scope.main.isLoggedIn) {
+                     // no logged user, redirect to /login-register unless already there
+                    if (next.templateUrl !== "components/login-register/login-registerTemplate.html") {
+                        $location.path("/login-register");
+                    }
+                  }
+               }); 
 
 }]);
 

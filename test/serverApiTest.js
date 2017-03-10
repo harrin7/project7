@@ -1,6 +1,6 @@
 'use strict';
 /*
- * Mocha test of cs142 Project #6 web API.  To run type
+ * Mocha test of cs142 Project #7 web API.  To run type
  *   node_modules/.bin/mocha serverApiTest.js
  */
 /* jshint node: true */
@@ -40,6 +40,52 @@ function removeMongoProperties(model) {
 }
 
 describe('CS142 Photo App API - ', function () {
+    var authCookie;  // Session took from login request
+
+    describe('login the user took', function() {
+
+        it('can login took with a post to /admin/login', function (done) {
+
+            var postBody = JSON.stringify({login_name: "took", password: "weak"});
+
+            var options = {
+                hostname: host,
+                port: port,
+                path: '/admin/login',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': postBody.length
+                }
+            };
+
+            var request = http.request(options, function (response) {
+                var responseBody = '';
+                response.on('data', function (chunk) {
+                    responseBody += chunk;
+                });
+
+                response.on('end', function () {
+                    assert.strictEqual(response.statusCode, 200, 'HTTP response status code not OK');
+                    // If express-session middleware was enabled we should have a 'set-cookie'
+                    // response header with the Express session cookie. We assume it will be the
+                    // first (and only) cookie.
+                    authCookie = response.headers['set-cookie'] && response.headers['set-cookie'][0];
+                    done();
+                });
+            });
+
+            request.write(postBody);
+            request.end();
+
+        });
+
+        it('can retrieve the Express session cookie', function (done) {
+            assert(authCookie, 'found a session cookie in the login POST response');
+            assert(authCookie.match(/^connect\.sid=/), 'looks like an Express cookie');
+            done();
+        });
+    });
 
     describe('test /user/list', function (done) {
         var userList;
@@ -49,7 +95,8 @@ describe('CS142 Photo App API - ', function () {
             http.get({
                 hostname: host,
                 port: port,
-                path: '/user/list'
+                path: '/user/list',
+                headers: {'Cookie': authCookie}
             }, function (response) {
                 var responseBody = '';
                 response.on('data', function (chunk) {
@@ -70,7 +117,7 @@ describe('CS142 Photo App API - ', function () {
         });
 
         it('has the correct number elements', function (done) {
-            assert.strictEqual(userList.length, cs142Users.length);
+            assert.strictEqual(userList.length, cs142Users.length, 'Wrong number of users. Did you forget to run loadDatabase.js?');
             done();
         });
 
@@ -89,6 +136,7 @@ describe('CS142 Photo App API - ', function () {
             }, done);
         });
 
+
     });
 
     describe('test /user/:id', function (done) {
@@ -99,7 +147,8 @@ describe('CS142 Photo App API - ', function () {
             http.get({
                 hostname: host,
                 port: port,
-                path: '/user/list'
+                path: '/user/list',
+                headers: {'Cookie': authCookie}
             }, function (response) {
                 var responseBody = '';
                 response.on('data', function (chunk) {
@@ -126,7 +175,8 @@ describe('CS142 Photo App API - ', function () {
                 http.get({
                     hostname: host,
                     port: port,
-                    path: '/user/' + id
+                    path: '/user/' + id,
+                    headers: {'Cookie': authCookie}
                 }, function (response) {
                     var responseBody = '';
                     response.on('data', function (chunk) {
@@ -154,7 +204,8 @@ describe('CS142 Photo App API - ', function () {
             http.get({
                 hostname: host,
                 port: port,
-                path: '/user/1'
+                path: '/user/1',
+                headers: {'Cookie': authCookie}
             }, function (response) {
                 var responseBody = '';
                 response.on('data', function (chunk) {
@@ -168,17 +219,20 @@ describe('CS142 Photo App API - ', function () {
             });
         });
 
+
     });
 
     describe('test /photosOfUser/:id', function (done) {
         var userList;
         var cs142Users = cs142models.userListModel();
+        var lastUserID;
 
         it('can get the list of user', function (done) {
             http.get({
                 hostname: host,
                 port: port,
-                path: '/user/list'
+                path: '/user/list',
+                headers: {'Cookie': authCookie}
             }, function (response) {
                 var responseBody = '';
                 response.on('data', function (chunk) {
@@ -203,10 +257,12 @@ describe('CS142 Photo App API - ', function () {
                 assert(user, 'could not find user ' + realUser.first_name + ' ' + realUser.last_name);
                 var photos;
                 var id = user._id;
+                lastUserID = id;
                 http.get({
                     hostname: host,
                     port: port,
-                    path: '/photosOfUser/' + id
+                    path: '/photosOfUser/' + id,
+                    headers: {'Cookie': authCookie}
                 }, function (response) {
                     var responseBody = '';
                     response.on('data', function (chunk) {
@@ -271,7 +327,8 @@ describe('CS142 Photo App API - ', function () {
             http.get({
                 hostname: host,
                 port: port,
-                path: '/photosOfUser/1'
+                path: '/photosOfUser/1',
+                headers: {'Cookie': authCookie}
             }, function (response) {
                 var responseBody = '';
                 response.on('data', function (chunk) {

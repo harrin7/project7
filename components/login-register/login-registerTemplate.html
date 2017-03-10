@@ -1,0 +1,10 @@
+<div class="user-login">
+    <form ng-controller="LoginRegisterController" ng-submit="loginUser()">
+        <label> User Name</label> 
+        <input type="text" id="name" name="name" ng-model="main.userLogin" placeholder="User Name"> 
+        <button class="btn btn-primary">Login</button>
+    </form>
+</div>
+<div ng-if="main.userError"> 
+<p>No user found. Please try again</p>
+</div>
