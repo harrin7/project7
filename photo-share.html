@@ -47,7 +47,10 @@
             <div flex="nogrow" layout = "column">
                 <div>{{main.sectionHeader}} {{userDetails.first_name}}</div>
                 <div class="version-number">App Version: {{main.versionModel.__v}}</div>
-                <div ng-if="main.isLoggedIn"> {{main.currentUserName}} <button ng-click="main.logoutUser()">logout</button></div>
+                <div ng-if="main.isLoggedIn">
+                    <div> {{main.currentUserName}} <button ng-click="main.logoutUser()">logout</button></div>
+                    <div><input type="file" accept="image/*"  onchange="angular.element(this).scope().inputFileNameChanged(this)"><button ng-click="uploadPhoto()">Upload</button></div>
+                </div>
 
             </div>
         </md-toolbar>

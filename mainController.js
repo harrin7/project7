@@ -48,18 +48,7 @@ cs142App.controller('MainController', ['$scope', '$resource', '$rootScope', '$lo
 
         $scope.main.currentUserName = '';
 
-        // $rootScope.$on("isLoggedIn", function () {
-        //   $scope.main.isLoggedIn = 1;
-        // });
-
-        // $rootScope.$on( "$routeChangeStart", function(event, next, current) {
-        //          if (!main.isLoggedIn) {
-        //             // no logged user, redirect to /login-register unless already there
-        //            if (next.templateUrl !== "components/login-register/login-registerTemplate.html") {
-        //                $location.path("/login-register");
-        //            }
-        //          }
-        //       }); 
+        var selectedPhotoFile; // Holds the last file selected by the user
 
         $scope.main.logoutUser = function() {
 
@@ -102,6 +91,44 @@ cs142App.controller('MainController', ['$scope', '$resource', '$rootScope', '$lo
                     }
                   }
                }); 
+
+        // This is for photo upload 
+
+          // Called on file selection - we simply save a reference to the file in selectedPhotoFile
+          $scope.inputFileNameChanged = function (element) {
+              selectedPhotoFile = element.files[0];
+          };
+
+          // Has the user selected a file?
+          $scope.inputFileNameSelected = function () {
+              return !!selectedPhotoFile;
+          };
+
+          // Upload the photo file selected by the user using a post request to the URL /photos/new
+          $scope.uploadPhoto = function () {
+              if (!$scope.inputFileNameSelected()) {
+                  console.error("uploadPhoto called will no selected file");
+                  return;
+              }
+              console.log('fileSubmitted', selectedPhotoFile);
+
+              // Create a DOM form and add the file to it under the name uploadedphoto
+              var domForm = new FormData();
+              domForm.append('uploadedphoto', selectedPhotoFile);
+
+              // Using $http to POST the form
+              $http.post('/photos/new', domForm, {
+                  transformRequest: angular.identity,
+                  headers: {'Content-Type': undefined}
+              }).success(function(newPhoto){
+                  console.log("succss");
+                  // The photo was successfully uploaded. XXX - Do whatever you want on success.
+              }).error(function(err){
+                  // Couldn't upload the photo. XXX  - Do whatever you want on failure.
+                  console.error('ERROR uploading photo', err);
+              });
+
+          };
 
 }]);
 

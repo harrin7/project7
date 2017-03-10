@@ -46,6 +46,9 @@ var app = express();
 var session = require('express-session');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+var fs = require("fs");
+
+var processFormBody = multer({storage: multer.memoryStorage()}).single('uploadedphoto');
 
 
 mongoose.connect('mongodb://localhost/cs142project6');
@@ -134,7 +137,7 @@ app.get('/', function (request, response) {
  */
 app.get('/user/list', function (request, response) {
 
-        User.find({}, '_id first_name last_name login_name', function (err, user) {
+        User.find({}, '_id first_name last_name login_name __v', function (err, user) {
             if (err) {
                 // Query returned an error.  We pass it back to the browser with an Internal Service
                 // Error (500) error code.
@@ -210,6 +213,7 @@ app.get('/user/:id', function (request, response) {
     User.findOne ({'login_name': loginName}, function(err, user){
         if (user) {
             request.session.user_id = user._id;
+            request.session.__v = user.__v;
             response.status(200).send(user);
         } else {
             response.status(400).send('Not found');
@@ -240,7 +244,7 @@ app.post('/admin/logout', function (request, response){
 
     Photo.update ({_id: photo_id}, {$push: {comments: comment}}, function(err, photo) {
         if (err) {
-            esponse.status(400).send('Not found');
+            response.status(400).send('Not found');
         }
         else {
             response.status(200).send();
@@ -248,6 +252,61 @@ app.post('/admin/logout', function (request, response){
     })
     
  });
+
+ //upload and post photo
+  app.post('/photos/new', function (request, response){
+
+    processFormBody(request, response, function (err) {
+                if (err || !request.file) {
+                    // XXX -  Insert error handling code here.
+                    response.status(400).send('No file');
+                    return;
+                }
+                // request.file has the following properties of interest
+                //      fieldname      - Should be 'uploadedphoto' since that is what we sent
+                //      originalname:  - The name of the file the user uploaded
+                //      mimetype:      - The mimetype of the image (e.g. 'image/jpeg',  'image/png')
+                //      buffer:        - A node Buffer containing the contents of the file
+                //      size:          - The size of the file in bytes
+
+                // XXX - Do some validation here.
+                // We need to create the file in the directory "images" under an unique name. We make
+                // the original file name unique by adding a unique prefix with a timestamp.
+                var timestamp = new Date().valueOf();
+                var filename = 'U' +  String(timestamp) + request.file.originalname;
+                var user_id = request.session.user_id;
+                var __v = request.session.__v;
+                console.log(filename);
+
+                fs.writeFile("./images/" + filename, request.file.buffer, function (err) {
+                    if (err) {
+                        response.status(400).send('file upload error');
+                    }
+                    else {
+                        var photoObject = {};
+                        photoObject.file_name = filename;
+                        photoObject.user_id = user_id;
+                        photoObject.__v = __v;
+                        photoObject.comments = [];
+                        photoObject.date_time = timestamp;
+                        console.log (photoObject);
+
+                        Photo.create(photoObject, function (err, photoObject) {
+                          if (err) return handleError(err);
+                          // saved!
+                          response.status(200).send('file uploaded');
+                        })
+
+                    }
+                  // XXX - Once you have the file written into your images directory under the name
+                  // filename you can create the Photo object in the database
+                  //I have.. user_id
+                  //I can find photo object of user_id
+                  //insert new photo object with: _id (empty?) , file_name , user_id (session), __v (session), comments [], date_time = timestamp 
+                });
+            });
+     
+  });
 
 var server = app.listen(3000, function () {
     var port = server.address().port;
