@@ -137,7 +137,7 @@ app.get('/', function (request, response) {
  */
 app.get('/user/list', function (request, response) {
 
-        User.find({}, '_id first_name last_name login_name __v', function (err, user) {
+        User.find({}, '_id first_name last_name login_name __v password', function (err, user) {
             if (err) {
                 // Query returned an error.  We pass it back to the browser with an Internal Service
                 // Error (500) error code.
@@ -205,13 +205,37 @@ app.get('/user/:id', function (request, response) {
      });
  });
 
+ //register
+  app.post('/user', function (request, response){
+     // if there is a match
+     const userObj = request.body.newUser
+     const loginName = request.body.newUser.login_name;
+
+     User.findOne ({'login_name': loginName}, function(err, user){
+         if (user) {
+             response.status(400).send('user name already exists');
+         } else {
+            User.create(userObj, function (err, photoObject) {
+              if (err) return handleError(err);
+              // saved!
+              response.status(200).send('user uploaded');
+            })
+         }
+
+     })
+     
+  });
+
 //login
  app.post('/admin/login', function (request, response){
     // if there is a match
-    const loginName = request.body.login_name;
+    const loginName = request.body.login_info.name;
+    const password = request.body.login_info.password;
+    console.log(loginName);
+    console.log(password);
 
     User.findOne ({'login_name': loginName}, function(err, user){
-        if (user) {
+        if (user.password === password) {
             request.session.user_id = user._id;
             request.session.__v = user.__v;
             response.status(200).send(user);

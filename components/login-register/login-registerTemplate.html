@@ -1,8 +1,48 @@
 <div class="user-login">
+	<h2>Login</h2>
     <form ng-controller="LoginRegisterController" ng-submit="loginUser()">
         <label> User Name</label> 
         <input type="text" id="name" name="name" ng-model="main.userLogin" placeholder="User Name"> 
+        <label> Password</label> 
+        <input type="password" id="name" name="name" ng-model="main.userPassword" placeholder="Password"> 
         <button class="btn btn-primary">Login</button>
+    </form>
+</div>
+<div ng-if="main.userError"> 
+<p>The user / password combination cannot be found. Please try again</p>
+</div>
+
+<div class="user-register">
+	<h2>New User</h2>
+    <form ng-controller="LoginRegisterController" ng-submit="registerUser()">
+        <label> User Name</label> 
+        <input type="text" id="name" name="name" ng-model="main.newUserLogin" placeholder="User Name" required> <div ng-if = "main.nameExists">User Name already exists. Please select a new User Name. </div>
+        <br/> 
+        <label> Password</label> 
+        <input type="password" id="name" name="name" ng-model="main.createPassword" placeholder="Password" required>
+        <br/> 
+        <label> Password Confirmation</label> 
+        <input type="password" id="name" name="name" ng-model="main.confirmPassword" placeholder="Confirm Password" ng-change="checkPasswords()" required>
+        <br/> 
+        <div ng-if = "!main.passwordMatch"> Passwords do not match </div>
+        <label> First Name</label> 
+        <input type="text" id="name" name="name" ng-model="main.newFirstName" placeholder="First Name" required>
+        <br/> 
+        <label> Last Name</label> 
+        <input type="text" id="name" name="name" ng-model="main.newLastName" placeholder="Last Name" required>
+        <br/> 
+        <label> Location</label> 
+        <input type="text" id="name" name="name" ng-model="main.newLocation" placeholder="Location">
+        <br/> 
+        <label> Description</label> 
+        <input type="text" id="name" name="name" ng-model="main.newDescription" placeholder="Description">
+        <br/> 
+        <label> Occupation</label> 
+        <input type="text" id="name" name="name" ng-model="main.newOccupation" placeholder="Occupation">
+        <br/>
+        <div ng-if = "!main.canSubmit"> Passwords Do Not Match </div> 
+        <br/>
+        <button class="btn btn-primary">Create User</button>
     </form>
 </div>
 <div ng-if="main.userError"> 

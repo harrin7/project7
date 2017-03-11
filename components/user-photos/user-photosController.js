@@ -27,6 +27,7 @@ cs142App.controller('UserPhotosController', ['$scope', '$routeParams', '$resourc
             $scope.photoDetails = user.query({'userid': userId});
             console.log($scope.photoDetails);
             console.log('Im back in comments');
+            $scope.main.userComment = '';
             //update page
 
             

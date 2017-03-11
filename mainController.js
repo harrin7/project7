@@ -45,6 +45,7 @@ cs142App.controller('MainController', ['$scope', '$resource', '$rootScope', '$lo
         $scope.main.userComment ='';
         $scope.main.userId = '';
         $scope.main.photoDetails = '';
+        $scope.main.userPassword = '';
 
         $scope.main.currentUserName = '';
 

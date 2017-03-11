@@ -13,7 +13,7 @@
 		    {{commentDetails.comment}} 
 	    </p>
         <div class="user-comment">
-            <form ng-controller="UserPhotosController" ng-submit="userComment(photo)">
+            <form ng-submit="userComment(photo)">
                 <label> Comment</label> 
                 <input type="text" id="name" name="name" ng-model="main.userComment" placeholder="Comment"> 
                 <button class="btn btn-primary">Add</button>
